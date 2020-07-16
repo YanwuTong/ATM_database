@@ -1,0 +1,2 @@
+main:
+	javac -d out/ -cp /path/to/ojdbc8.jar cs174a/*.java	

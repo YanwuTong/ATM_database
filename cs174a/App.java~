@@ -1,0 +1,304 @@
+package cs174a;                                             // THE BASE PACKAGE FOR YOUR APP MUST BE THIS ONE.  But you may add subpackages.
+
+// You may have as many imports as you need.
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import oracle.jdbc.pool.OracleDataSource;
+import oracle.jdbc.OracleConnection;
+import java.util.Date;
+
+/**
+ * The most important class for your application.
+ * DO NOT CHANGE ITS SIGNATURE.
+ */
+public class App implements Testable
+{
+	private OracleConnection _connection;                   // Example connection object to your DB.
+
+	/**
+	 * Default constructor.
+	 * DO NOT REMOVE.
+	 */
+	App()
+	{
+		// TODO: Any actions you need.
+	}
+
+	/**
+	 * This is an example access operation to the DB.
+	 */
+	void exampleAccessToDB()
+	{
+		// Statement and ResultSet are AutoCloseable and closed automatically.
+		try( Statement statement = _connection.createStatement() )
+		{
+		    try( ResultSet resultSet = statement.executeQuery( "select owner, table_name from all_tables where owner = 'C##XINHAOXIAO'" ) )
+			{
+				while( resultSet.next() )
+					System.out.println( resultSet.getString( 1 ) + " " + resultSet.getString( 2 ) + " " );
+			}
+		}
+		catch( SQLException e )
+		{
+			System.err.println( e.getMessage() );
+		}
+	}
+
+	////////////////////////////// Implement all of the methods given in the interface /////////////////////////////////
+	// Check the Testable.java interface for the function signatures and descriptions.
+
+	@Override
+	public String initializeSystem()
+	{
+		// Some constants to connect to your DB.
+		final String DB_URL = "jdbc:oracle:thin:@cs174a.cs.ucsb.edu:1521/orcl";
+		final String DB_USER = "c##xinhaoxiao";
+		final String DB_PASSWORD = "4594529";
+
+		// Initialize your system.  Probably setting up the DB connection.
+		Properties info = new Properties();
+		info.put( OracleConnection.CONNECTION_PROPERTY_USER_NAME, DB_USER );
+		info.put( OracleConnection.CONNECTION_PROPERTY_PASSWORD, DB_PASSWORD );
+		info.put( OracleConnection.CONNECTION_PROPERTY_DEFAULT_ROW_PREFETCH, "20" );
+
+		try
+		{
+			OracleDataSource ods = new OracleDataSource();
+			ods.setURL( DB_URL );
+			ods.setConnectionProperties( info );
+			_connection = (OracleConnection) ods.getConnection();
+
+			// Get the JDBC driver name and version.
+			DatabaseMetaData dbmd = _connection.getMetaData();
+			System.out.println( "Driver Name: " + dbmd.getDriverName() );
+			System.out.println( "Driver Version: " + dbmd.getDriverVersion() );
+
+			// Print some connection properties.
+			System.out.println( "Default Row Prefetch Value is: " + _connection.getDefaultRowPrefetch() );
+			System.out.println( "Database Username is: " + _connection.getUserName() );
+			System.out.println();
+
+			return "0";
+		}
+		catch( SQLException e )
+		{
+			System.err.println( e.getMessage() );
+			return "1";
+		}
+	}
+
+    /**
+     * Example of one of the testable functions.
+     */
+    @Override
+    public String listClosedAccounts()
+    {
+	return "0 it works!";
+    }
+
+    /**
+     * Another example.
+     */
+    @Override
+    public String createCheckingSavingsAccount( AccountType accountType, String id, double initialBalance, String tin, String name, String address )
+    {
+	return "0 " + id + " " + accountType + " " + initialBalance + " " + tin;
+    }
+
+
+    @Override
+    public String dropTables() {
+	
+	String DROP_Transaction_SQL="DROP TABLE Transaction";
+	String DROP_Account_SQL = "DROP TABLE Account";
+	String DROP_Customer_SQL = "DROP TABLE Customer";
+	try(Statement statement = _connection.createStatement()) {
+	    statement.executeQuery(DROP_Transaction_SQL);
+	    statement.executeQuery(DROP_Account_SQL);
+	    statement.executeQuery(DROP_Customer_SQL);
+	}catch(SQLException e) {
+	    System.out.println(e.getMessage());
+	    return "1";
+	}
+       
+	return "0";
+
+    }
+
+    @Override
+    public String createTables() {
+	String r1 =createAccountTable();
+	String r2 = createCustomerTable();
+	String r3 = createTransactionTable();
+
+	if(r1.equals(r2) && r1.equals(r3) && r1.equals("0")) {
+	    return "0";
+	}else {
+	    return "1";
+	}
+       
+    }
+
+    @Override
+    public String setDate(int year, int month, int day) {
+	
+	return "";
+    }
+
+    @Override
+    public String createPocketAccount(String id, String linkedId, double initialTopUp, String tin) {
+	return "";
+	
+    }
+
+
+    @Override
+    public String createCustomer(String accountId, String tin, String name, String address) {
+	
+	
+
+
+	
+	return "";
+    }
+
+    @Override
+    public String deposit(String accountId, double amount) {
+	return "";
+    }
+
+    @Override
+    public String showBalance(String accountId) {
+	return "";
+    }
+
+    @Override
+    public String topUp(String accountId, double amount) {
+	return "";
+    }
+
+    @Override
+    public String payFriend(String from, String to, double amount) {
+	return "";
+    }
+
+
+    //My own functions .....................
+    //
+    //
+    
+
+
+    //Create Table named Account
+    public String createAccountTable(){
+	String CREATE_TABLE_SQL="CREATE TABLE Account("
+                    + "aid INTEGER NOT NULL,"
+                    + "bbn CHAR(20) NOT NULL,"
+                    + "type CHAR(20) NOT NULL,"
+                    + "interestRate REAL NOT NULL,"
+                    + "PRIMARY KEY (aid))";
+	try(Statement statement = _connection.createStatement()) {
+	    statement.executeQuery(CREATE_TABLE_SQL);	
+	}catch(SQLException e) {
+	    System.out.println(e.getMessage());
+	    return "1";
+	}
+	return "0";
+    }
+
+    //Create Table named Customer
+    public String createCustomerTable() {
+	String CREATE_TABLE_SQL="CREATE TABLE Customer("
+                    + "tid INTEGER NOT NULL,"
+                    + "cname CHAR(20) NOT NULL,"
+                    + "address CHAR(20) NOT NULL,"
+                    + "pin INTEGER NOT NULL,"
+                    + "PRIMARY KEY (tid,pin))";
+	try(Statement statement = _connection.createStatement()) {
+	    statement.executeQuery(CREATE_TABLE_SQL);	
+	}catch(SQLException e) {
+	    System.out.println(e.getMessage());
+	    return "1";
+	}
+	return "0";
+    }
+
+    //Create Table named Transaction
+    public  String createTransactionTable() {
+	
+	String CREATE_TABLE_SQL="CREATE TABLE Transaction("
+                    + "cname CHAR(20) NOT NULL,"
+	    + "t_type CHAR(20) NOT NULL,"
+	    + "aid INTEGER NOT NULL,"
+	    + "d CHAR(20) NOT NULL,"
+	    + "f INTEGER NOT NULL,"
+	    + "t INTEGER NOT NULL,"
+	    + "PRIMARY KEY (aid,cname),"
+	    + "FOREIGN KEY (aid) REFERENCES Account(aid))";
+
+	try(Statement statement = _connection.createStatement()) {
+	    statement.executeUpdate(CREATE_TABLE_SQL);	
+	}catch(SQLException e) {
+	    System.out.println(e.getMessage());
+	    return "1";
+	}
+	return "0";
+    }
+
+    //Create Table named pocketLink
+     public  String createPocketLinkTable() {
+	
+	String CREATE_TABLE_SQL="CREATE TABLE PocketLink("
+                    + "aid INTEGER NOT NULL,"
+	    + "pid INTEGER NOT NULL,"
+	   
+	    + "PRIMARY KEY (aid,pid),"
+	    + "FOREIGN KEY (aid) REFERENCES Account(aid))";
+	try(Statement statement = _connection.createStatement()) {
+	    statement.executeUpdate(CREATE_TABLE_SQL);	
+	}catch(SQLException e) {
+	    System.out.println(e.getMessage());
+	    return "1";
+	}
+	return "0";
+     }
+
+    public String insertCustomer() {
+	String INSERT_CUSTOMER_SQL = "INSERT INTO Customer (tid,cname,address,pin)"
+	    + "VALUES (361721022,'Af Hi','6667 El C #40', 1234)";
+	try(Statement statement = _connection.createStatement()) {
+	    statement.executeUpdate(INSERT_CUSTOMER_SQL);	
+	}catch(SQLException e) {
+	    System.out.println(e.getMessage());
+	    return "1";
+	}
+	return "0";
+    }
+
+    public String printCustomerTable()  {
+	// Statement and ResultSet are AutoCloseable and closed automatically. 
+	try (Statement statement = _connection.createStatement()) {      
+	    try (ResultSet rs = statement
+		 .executeQuery("select * from Customer" )) {
+		while (rs.next()){
+		    int tid = rs.getInt("tid");
+		    String cname = rs.getString("cname");
+		    String address  = rs.getString("address");
+		    int pin = rs.getInt("pin");
+		    System.out.println(tid+"   "+cname+"    "+ address + "    "   + pin);     
+		}
+	    } catch(SQLException e) {
+		return "1";
+	    }
+	}catch(SQLException e) {
+	    return "1";
+	}
+	return "0";
+    }
+
+
+    
+}
